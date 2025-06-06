@@ -48,10 +48,20 @@
       vertical-align: middle;
       letter-spacing: 1px;
     }
-    @keyframes pop {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    /* Modal for Battle */
+    #battleModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;}
+    #modalContent {
+      background: #222; color: #ffeb3b; border-radius: 14px; box-shadow: 0 0 36px #000b; padding: 32px 24px;
+      max-width: 520px; width: 90vw; text-align: center; position: relative; min-height: 220px; min-width: 320px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
+    #closeBattleModal { position: absolute; top: 14px; right: 14px; background: #f44336; color: #fff; border: none;
+      border-radius: 5px; font-size: 15px; padding: 6px 16px; cursor: pointer;}
+    .battle-gif { max-width: 220px; max-height: 180px; margin: 18px auto 6px auto; display: block;
+      border-radius: 12px; box-shadow: 0 0 16px #000a; background: #333;}
+    .hidden { display: none !important; }
+    @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   </style>
 </head>
 <body>
@@ -65,8 +75,8 @@
   <h1>Beyblade Game Lobby</h1>
   <div id="lobbyScreen" class="screen active">
     <button class="lobby-btn" onclick="showScreen('customizeScreen')">Customize Your Beyblades</button>
-    <button class="lobby-btn" onclick="startStoryMode()">Fight Story Mode</button>
-    <button class="lobby-btn" onclick="startFriendFight()">Fight with a Friend</button>
+    <button class="lobby-btn" onclick="openBattleModal()">Fight Story Mode</button>
+    <button class="lobby-btn" onclick="openBattleModal()">Fight with a Friend</button>
   </div>
   <div id="customizeScreen" class="screen">
     <button class="arrow-btn" onclick="showScreen('lobbyScreen')" title="Back to Lobby">&#8592;</button>
@@ -84,12 +94,8 @@
     <div id="customSaveMsg" class="custom-save-msg">Beyblade saved!</div>
     <div id="stats"></div>
   </div>
-  <div id="storyScreen" class="screen">
-    <div id="storyContent"></div>
-    <div id="storyOptions" style="margin-top:18px;"></div>
-  </div>
   <div class="secret-box">
-    <label for="secretInput">Enter Secret Code (for fun, not a password):</label>
+    <label for="secretInput">Enter Fun Secret Code (for bonus feature):</label>
     <input type="text" id="secretInput" placeholder="Type a code">
     <button onclick="checkSecret()">Unlock</button>
     <div class="cheese-result" id="cheeseResult">
@@ -98,6 +104,23 @@
       Weight: <b>250 lbs</b><br>
       Spin Speed: <b>Mach 3.5</b><br>
       <span style="color:#d84315;font-weight:bold;">Any opponent beyblade shatters like glass!</span>
+    </div>
+  </div>
+  <!-- Battle Modal -->
+  <div id="battleModal">
+    <div id="modalContent">
+      <button id="closeBattleModal" onclick="closeBattleModal()" class="hidden">Close</button>
+      <div id="battleStage">
+        <h2>Beyblade Battle!</h2>
+        <button class="option-btn" id="launchBtn" onclick="launchBeyblades()">Launch Beyblades!</button>
+      </div>
+      <div id="gifStage" class="hidden">
+        <img src="https://media.tenor.com/aM0RPAK-Kj0AAAAC/beyblade-burst-evolution-valt-aoi.gif" alt="Battle GIF" class="battle-gif">
+        <p>Let it rip!</p>
+      </div>
+      <div id="summaryStage" class="hidden">
+        <div id="battle-summary" style="color:#fff;margin-top:10px;text-align:left;font-size:1.13em"></div>
+      </div>
     </div>
   </div>
   <div id="privacy" style="margin:40px auto 0 auto;max-width:700px;background:#333;padding:18px 24px;border-radius:9px;color:#fff;">
@@ -112,7 +135,7 @@
     </p>
   </div>
   <script>
-    // --- HMS PARTS DATA ---
+    // --- Data & Customization Logic ---
     const layers = {
       "Advance Striker":{attack:8,defense:4,stamina:5,weight:32},
       "Samurai Upper":{attack:7,defense:7,stamina:6,weight:33},
@@ -218,63 +241,43 @@
       document.getElementById(screenId).classList.add('active');
       if(screenId==='customizeScreen'){setupCustomization();}
     }
-    // --- STORY MODE ---
-    const storyFights=[
-      {name:"Kai",faceImg:"images/kai.png",bey:"Dranzer MS",stats:{attack:13,defense:10,stamina:13,weight:60},line:"Let's see what you've got!"},
-      {name:"Ray",faceImg:"images/ray.png",bey:"Driger MS",stats:{attack:12,defense:11,stamina:11,weight:62},line:"I'm not going easy on you!"},
-      {name:"Brooklyn",faceImg:"images/brooklyn.png",bey:"Zeus",stats:{attack:16,defense:13,stamina:17,weight:63},line:"Can you keep up with me?"}
+
+    // --- Battle modal logic with dynamic summary ---
+    const rivals = [
+      { name: "Kai", bey: "Dranzer MS" },
+      { name: "Tyson", bey: "Dragoon MS" },
+      { name: "Ray", bey: "Driger MS" },
+      { name: "Max", bey: "Draciel MS" },
+      { name: "Brooklyn", bey: "Zeus" }
     ];
-    let currentFight=0, fightEnded=false;
-    function startStoryMode(){currentFight=0;showScreen('storyScreen');renderStoryFight();}
-    function renderStoryFight(){
-      const storyContent=document.getElementById('storyContent');
-      const storyOptions=document.getElementById('storyOptions');
-      if(currentFight<storyFights.length){
-        const fight=storyFights[currentFight];
-        storyContent.innerHTML=`<h2>Fight ${currentFight+1}: ${fight.name}</h2><p>Opponent Beyblade: <b>${fight.bey}</b></p>`;
-        storyOptions.innerHTML=`<button class="option-btn" onclick="launchStoryFight()">Begin Fight</button>${currentFight>0?'<button class="option-btn" onclick="returnToLobby()">Back to Lobby</button>':''}`;
-      }else{
-        storyContent.innerHTML=`<h2>Congratulations!</h2><p>You defeated all opponents in Story Mode!</p>`;
-        storyOptions.innerHTML=`<button class="option-btn" onclick="returnToLobby()">Back to Lobby</button><button class="option-btn" onclick="restartStory()">Fight Again</button>`;
-      }
+    function randomRival() {
+      return rivals[Math.floor(Math.random()*rivals.length)];
     }
-    function restartStory(){currentFight=0;renderStoryFight();}
-    function returnToLobby(){showScreen('lobbyScreen');}
-    function launchStoryFight(){
-      const custom=JSON.parse(localStorage.getItem('customBeyblade'));
-      if(!custom){alert('Please customize your Beyblade first!');returnToLobby();return;}
-      const fight=storyFights[currentFight];
-      openFightModal(fight,custom,true);
+    function openBattleModal() {
+      document.getElementById('battleModal').style.display = 'flex';
+      document.getElementById('battleStage').classList.remove('hidden');
+      document.getElementById('gifStage').classList.add('hidden');
+      document.getElementById('summaryStage').classList.add('hidden');
+      document.getElementById('closeBattleModal').classList.add('hidden');
+      document.getElementById('launchBtn').disabled = false;
+      // Pick random rival and save for summary
+      window._currentRival = randomRival();
     }
-    // --- FRIEND FIGHT ---
-    function startFriendFight(){
-      const custom=JSON.parse(localStorage.getItem('customBeyblade'));
-      if(!custom)return alert('Please customize your Beyblade first!');
-      const rivalOptions=[
-        {name:"Random Blader",faceImg:"images/rival1.png",bey:"Wolborg MS",stats:{attack:10,defense:10,stamina:10,weight:60},line:"Let's have a great match!"},
-        {name:"Random Blader",faceImg:"images/rival2.png",bey:"Dragoon MS",stats:{attack:12,defense:8,stamina:11,weight:58},line:"I'm ready to spin!"},
-        {name:"Random Blader",faceImg:"images/rival3.png",bey:"Draciel MS",stats:{attack:7,defense:16,stamina:8,weight:67},line:"Defense is my specialty!"}
-      ];
-      const rival=rivalOptions[Math.floor(Math.random()*rivalOptions.length)];
-      openFightModal(rival,custom,false);
+    function launchBeyblades() {
+      document.getElementById('battleStage').classList.add('hidden');
+      document.getElementById('gifStage').classList.remove('hidden');
+      document.getElementById('summaryStage').classList.add('hidden');
+      document.getElementById('closeBattleModal').classList.add('hidden');
+      // After 3s, hide GIF and show summary
+      setTimeout(function() {
+        document.getElementById('gifStage').classList.add('hidden');
+        showBattleSummary();
+        document.getElementById('summaryStage').classList.remove('hidden');
+        document.getElementById('closeBattleModal').classList.remove('hidden');
+      }, 3000);
     }
-    // --- FIGHT MODAL LOGIC ---
-    function openFightModal(rival,player,isStory){
-      // For simplicity, just show result in alert
-      setTimeout(()=>{
-        const usedCheese=player.layer==="CHEESE"&&player.disk==="CHEESE"&&player.driver==="CHEESE";
-        let playerWin=false;
-        if(usedCheese){playerWin=true;}
-        else{
-          const playerPower=player.stats.attack+player.stats.defense+player.stats.stamina+player.stats.weight+Math.random()*4;
-          const rivalPower=rival.stats.attack+rival.stats.defense+rival.stats.stamina+rival.stats.weight+Math.random()*4;
-          if(playerPower>rivalPower){playerWin=true;}
-        }
-        alert(playerWin?
-          (usedCheese?"You win! Cheese Beyblade shatters the opponent!":"You win! Your Beyblade was last spinning in the arena!") :
-          ("You lose! "+rival.name+"'s Beyblade won this time."));
-        if(isStory){currentFight++;renderStoryFight();}
-      },1000);
+    function closeBattleModal() {
+      document.getElementById('battleModal').style.display = 'none';
     }
     function checkSecret(){
       const input=document.getElementById('secretInput').value.trim();
@@ -286,6 +289,56 @@
         result.style.display='none';cheeseUnlocked=false;localStorage.setItem('cheeseUnlocked','0');showCheeseBtn();alert("Incorrect code! Try again.");
       }
     }
+
+    // --- Dynamic battle summary generator (2 paragraphs, always different) ---
+    function showBattleSummary() {
+      const custom = JSON.parse(localStorage.getItem('customBeyblade')) || {};
+      const playerName = "You";
+      const playerBey = custom.layer === "CHEESE" ? "Cheese Beyblade" : (custom.layer || "Custom Beyblade");
+      const rival = window._currentRival || randomRival();
+
+      // Random outcome
+      const didPlayerWin = Math.random() > 0.4 || (custom.layer === "CHEESE");
+      const ko = Math.random() > 0.5 ? "KO" : "Spin Finish";
+      const playerScore = Math.floor(Math.random()*10+10)+(didPlayerWin?4:0);
+      const rivalScore = Math.floor(Math.random()*10+10)+(didPlayerWin?0:4);
+
+      // Flavor text arrays
+      const openers = [
+        `The stadium lights blazed as ${playerName} and ${rival.name} locked eyes, both determined to win. The crowd roared with anticipation as the judge counted down.`,
+        `A tense silence fell as ${playerName} readied their ${playerBey}, while ${rival.name} confidently gripped their launcher. The energy in the arena was electric.`,
+        `Spectators leaned forward as the two bladers took their places. ${rival.name} gave a slight nod, acknowledging the fierce competition ahead.`
+      ];
+      const actions = [
+        `With a burst of speed, both Beyblades clashed at the center, sparks flying on impact. ${playerName}'s ${playerBey} circled aggressively, testing ${rival.name}'s defences.`,
+        `${rival.name}'s ${rival.bey} unleashed a relentless barrage, but ${playerName} deftly countered, keeping the balance of power shifting each second.`,
+        `Both tops collided over and over, the sound echoing as attacks and dodges played out in rapid succession. Fans could barely keep up with the whirlwind of motion.`
+      ];
+      const climaxes = [
+        `As the battle reached a fever pitch, both Beyblades unleashed their special moves. The stadium floor vibrated with power as the tops collided in a final showdown.`,
+        `The match seemed evenly matched until a sudden surge of energy shifted the momentum. Both bladers called out their final attacks, giving everything for victory.`,
+        `With stamina running low, both Beyblades teetered on the edge. It was a contest of endurance, will, and a bit of luck.`
+      ];
+      const wins = [
+        `With a dramatic twist, ${playerName}'s ${playerBey} delivered a decisive blow, sending ${rival.name}'s ${rival.bey} flying out of the ring. The crowd erupted in cheers as ${playerName} celebrated an unforgettable victory by ${ko.toLowerCase()}.`,
+        `At the last possible moment, ${playerName}'s ${playerBey} outlasted its rival, spinning triumphantly in the center as the opponent toppled. Victory was claimed with style and skill!`,
+        `The arena echoed with applause as ${playerName} secured the win. ${rival.name} offered a respectful nod, acknowledging an epic battle that would be talked about for ages.`
+      ];
+      const losses = [
+        `With a thunderous impact, ${rival.name}'s ${rival.bey} seized the advantage, knocking ${playerName}'s ${playerBey} off balance. In a flash, the match was over, and ${rival.name} emerged victorious by ${ko.toLowerCase()}.`,
+        `Despite a valiant effort, ${playerName}'s Beyblade slowed and finally toppled. The crowd cheered for both bladers, but this time the win belonged to ${rival.name}.`,
+        `The final moments belonged to ${rival.name}, whose precision and timing proved unbeatable. ${playerName} accepted the defeat with grace, already plotting a comeback.`
+      ];
+
+      // Paragraphs
+      const p1 = openers[Math.floor(Math.random()*openers.length)] + " " + actions[Math.floor(Math.random()*actions.length)];
+      const p2 = climaxes[Math.floor(Math.random()*climaxes.length)] + " " +
+        (didPlayerWin ? wins[Math.floor(Math.random()*wins.length)] : losses[Math.floor(Math.random()*losses.length)]) +
+        ` <br><b>Final Scores:</b> You: ${playerScore} &nbsp;|&nbsp; ${rival.name}: ${rivalScore}`;
+
+      document.getElementById('battle-summary').innerHTML = `<p>${p1}</p><p>${p2}</p>`;
+    }
   </script>
 </body>
 </html>
+
