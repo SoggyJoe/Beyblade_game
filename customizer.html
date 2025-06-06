@@ -103,6 +103,11 @@
         }
 
         // Scroll to customizer section on button click
+        document.getElementById("customizeBtn").addEventListener("click", function() {
+    document.getElementById("customizerSection").scrollIntoView({behavior: "smooth"});
+    // Or, if you want to show the section if it's hidden:
+    // document.getElementById("customizerSection").style.display = "block";
+});
         document.getElementById('customizeBtn').onclick = function() {
             document.getElementById('customizerSection').scrollIntoView({ behavior: "smooth" });
         };
