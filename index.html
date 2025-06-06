@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>Beyblade Game</title>
+</head>
+<body>
+    <button id="customizeBtn">Customize</button>
+
+    <script>
+        document.getElementById('customizeBtn').addEventListener('click', function() {
+            window.open('customize.html', 'Beyblade Customization');
+        });
+    </script>
   <meta charset="UTF-8">
   <title>Beyblade Game Lobby</title>
   <style>
@@ -152,9 +163,6 @@
     </div>
   </div>
 <script>
-  document.getElementById('customizeBtn').addEventListener('click', function() {
-  showScreen('customizeScreen');
-});
 /* --- HMS PARTS DATA --- */
 const layers = {
   "Advance Striker":{attack:8,defense:4,stamina:5,weight:32},
