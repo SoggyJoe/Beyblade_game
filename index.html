@@ -75,8 +75,8 @@
   <h1>Beyblade Game Lobby</h1>
   <div id="lobbyScreen" class="screen active">
     <button class="lobby-btn" onclick="showScreen('customizeScreen')">Customize Your Beyblades</button>
-    <button class="lobby-btn" onclick="openBattleModal()">Fight Story Mode</button>
-    <button class="lobby-btn" onclick="openBattleModal()">Fight with a Friend</button>
+    <button class="lobby-btn" id="storyBtn">Fight Story Mode</button>
+    <button class="lobby-btn" id="friendBtn">Fight with a Friend</button>
   </div>
   <div id="customizeScreen" class="screen">
     <button class="arrow-btn" onclick="showScreen('lobbyScreen')" title="Back to Lobby">&#8592;</button>
@@ -109,10 +109,10 @@
   <!-- Battle Modal -->
   <div id="battleModal">
     <div id="modalContent">
-      <button id="closeBattleModal" onclick="closeBattleModal()" class="hidden">Close</button>
+      <button id="closeBattleModal" class="hidden">Close</button>
       <div id="battleStage">
         <h2>Beyblade Battle!</h2>
-        <button class="option-btn" id="launchBtn" onclick="launchBeyblades()">Launch Beyblades!</button>
+        <button class="option-btn" id="launchBtn">Launch Beyblades!</button>
       </div>
       <div id="gifStage" class="hidden">
         <img src="https://media.tenor.com/aM0RPAK-Kj0AAAAC/beyblade-burst-evolution-valt-aoi.gif" alt="Battle GIF" class="battle-gif">
@@ -234,7 +234,14 @@
       document.getElementById('driver').onchange=updateStats;
       document.getElementById('customForm').onsubmit=saveCustomBeyblade;
     }
-    document.addEventListener('DOMContentLoaded',function(){setupCustomization();});
+    document.addEventListener('DOMContentLoaded',function(){
+      setupCustomization();
+      // Modal event bindings
+      document.getElementById('storyBtn').onclick = openBattleModal;
+      document.getElementById('friendBtn').onclick = openBattleModal;
+      document.getElementById('launchBtn').onclick = launchBeyblades;
+      document.getElementById('closeBattleModal').onclick = closeBattleModal;
+    });
 
     function showScreen(screenId){
       document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -320,12 +327,12 @@
         `With stamina running low, both Beyblades teetered on the edge. It was a contest of endurance, will, and a bit of luck.`
       ];
       const wins = [
-        `With a dramatic twist, ${playerName}'s ${playerBey} delivered a decisive blow, sending ${rival.name}'s ${rival.bey} flying out of the ring. The crowd erupted in cheers as ${playerName} celebrated an unforgettable victory by ${ko.toLowerCase()}.`,
+        `With a dramatic twist, ${playerName}'s ${playerBey} delivered a decisive blow, sending ${rival.name}'s ${rival.bey} flying out of the ring. The crowd erupted in cheers as ${playerName} claimed victory!`,
         `At the last possible moment, ${playerName}'s ${playerBey} outlasted its rival, spinning triumphantly in the center as the opponent toppled. Victory was claimed with style and skill!`,
         `The arena echoed with applause as ${playerName} secured the win. ${rival.name} offered a respectful nod, acknowledging an epic battle that would be talked about for ages.`
       ];
       const losses = [
-        `With a thunderous impact, ${rival.name}'s ${rival.bey} seized the advantage, knocking ${playerName}'s ${playerBey} off balance. In a flash, the match was over, and ${rival.name} emerged victorious by ${ko.toLowerCase()}.`,
+        `With a thunderous impact, ${rival.name}'s ${rival.bey} seized the advantage, knocking ${playerName}'s ${playerBey} off balance. In a flash, the match was over, and ${rival.name} emerged victorious.`,
         `Despite a valiant effort, ${playerName}'s Beyblade slowed and finally toppled. The crowd cheered for both bladers, but this time the win belonged to ${rival.name}.`,
         `The final moments belonged to ${rival.name}, whose precision and timing proved unbeatable. ${playerName} accepted the defeat with grace, already plotting a comeback.`
       ];
@@ -341,4 +348,3 @@
   </script>
 </body>
 </html>
-
