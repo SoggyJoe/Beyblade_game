@@ -4,126 +4,142 @@
   <meta charset="UTF-8">
   <title>Beyblade Game Lobby</title>
   <style>
-    body {
-      background: #222;
-      color: #ffeb3b;
-      font-family: 'Roboto', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    h1 {
-      margin-top: 40px;
-      font-size: 2.5rem;
-    }
-    .screen {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      width: 340px;
-      background: #333;
-      padding: 30px;
-      border-radius: 14px;
-      box-shadow: 0 0 20px #000;
-      margin-top: 30px;
-    }
-    .active {
-      display: flex;
-    }
+    body { background: #222; color: #ffeb3b; font-family: 'Roboto', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; }
+    h1 { margin-top: 40px; font-size: 2.5rem; }
+    .screen { display: none; flex-direction: column; align-items: center; width: 340px; background: #333; padding: 30px; border-radius: 14px; box-shadow: 0 0 20px #000; margin-top: 30px; }
+    .active { display: flex; }
     .lobby-btn, .arrow-btn, .option-btn {
-      font-size: 1.1rem;
-      padding: 12px;
-      border: none;
-      border-radius: 7px;
-      background: #ffeb3b;
-      color: #222;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.15s;
-      margin-bottom: 16px;
+      font-size: 1.1rem; padding: 12px; border: none; border-radius: 7px; background: #ffeb3b; color: #222; cursor: pointer; font-weight: bold; transition: background 0.15s; margin-bottom: 16px;
     }
-    .lobby-btn:hover, .arrow-btn:hover, .option-btn:hover {
-      background: #fff176;
+    .lobby-btn:hover, .arrow-btn:hover, .option-btn:hover { background: #fff176; }
+    .arrow-btn { align-self: flex-start; margin-bottom: 20px; background: #ffe082; width: 44px; height: 44px; font-size: 1.5rem; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
+    .customize-form label, .customize-form select { margin: 7px 0; font-size: 1rem; color: #fffde7; }
+    .customize-form select { width: 180px; padding: 5px; }
+    .customize-form button[type="submit"] { margin-top: 18px; padding: 10px 28px; font-size: 16px; background: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+    #cheeseBtn { background: #ffe082; color: #d84315; border: 2px solid #ffd54f; font-weight: bold; margin: 10px 0 5px 0; display: none; animation: pop 0.4s; }
+    .stats-table { margin-top: 15px; border-collapse: collapse; width: 100%; }
+    .stats-table th, .stats-table td { border: 1px solid #aaa; padding: 5px 9px; text-align: center; }
+    .stats-table th { background: #f3f3f3; color: #333; }
+    .custom-save-msg { color: #c0ffb3; margin: 8px 0; display: none; font-weight: bold; }
+    #fightModal {
+      display: none; position: fixed; z-index: 2001; left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
     }
-    .arrow-btn {
-      align-self: flex-start;
-      margin-bottom: 20px;
-      background: #ffe082;
-      width: 44px;
-      height: 44px;
-      font-size: 1.5rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 50%;
+    .fight-modal-content {
+      background: #222; color: #ffeb3b; border-radius: 14px; box-shadow: 0 0 36px #000b;
+      padding: 32px 24px; max-width: 520px; width: 90vw; text-align: center; position: relative;
     }
-    ul {
-      color: #fffde7;
-      text-align: left;
-      width: 100%;
-      margin-left: 0;
-      padding-left: 20px;
+    #fightCanvas {
+      margin-top: 20px; border-radius: 18px; background: radial-gradient(circle,#eee 60%,#bbb 100%);
+      box-shadow: 0 0 14px #0008;
+      display: block;
     }
-    .secret-box {
-      display: flex;
-      flex-direction: column;
-      background: #444;
-      padding: 18px;
-      border-radius: 8px;
-      margin-top: 20px;
-      align-items: center;
+    .fight-close-btn {
+      position: absolute; top: 14px; right: 14px; background: #f44336; color: #fff; border: none;
+      border-radius: 5px; font-size: 15px; padding: 6px 16px; cursor: pointer;
     }
-    .secret-box input[type="text"] {
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #888;
-      font-size: 1.1rem;
-      margin-bottom: 8px;
-      width: 180px;
-      text-align: center;
+    .fight-dialogue-block {
+      display: flex; align-items: flex-start; gap: 20px; min-height: 70px; margin-bottom: 10px; justify-content: center;
     }
-    .cheese-result {
-      background: #ffe082;
-      color: #222;
-      font-weight: bold;
+    .fight-dialogue-face {
+      width: 70px; height: 70px; background: #333; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 60px; margin-top: 2px; margin-bottom: 4px; border: 3px solid #ffeb3b;
+      overflow: hidden; flex-shrink: 0; position: relative;
+    }
+    .fight-dialogue-face img {
+      width: 68px; height: 68px; border-radius: 50%; object-fit: cover; display: block; position: relative; z-index: 1;
+    }
+    .talking-mouth {
+      position: absolute; left: 21px; top: 42px; width: 28px; height: 18px; background: #222;
+      border-radius: 0 0 13px 13px/0 0 30px 30px; border-bottom: 3px solid #ffeb3b;
+      animation: mouthOpen 0.45s infinite; z-index: 2;
+    }
+    .face-container {
+      position: relative; width: 70px; height: 70px; display: inline-block; background: transparent;
+    }
+    .fight-dialogue-text { font-size: 1.1em; color: #fffde7; text-align: left; align-self: center; min-width: 170px; min-height: 54px; }
+    .fight-result { font-size: 1.3em; margin: 22px 0 10px 0; }
+    .piece {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: url('images/cheese.png') center/cover no-repeat;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.93;
       border-radius: 6px;
-      padding: 12px;
-      margin-top: 10px;
-      display: none;
-      animation: pop 0.5s;
+      filter: drop-shadow(0 1px 3px #222c);
+      animation: flyCheese 1.3s forwards;
     }
     @keyframes pop {
       from { transform: scale(0.8); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
+    @keyframes mouthOpen {
+      0%, 100% { clip-path: ellipse(30% 10% at 50% 70%); }
+      50%      { clip-path: ellipse(30% 30% at 50% 80%); }
+    }
+    @keyframes flyCheese {
+      0% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .cheese-badge {
+      background: #ffe082;
+      color: #d84315;
+      border-radius: 8px;
+      font-size: 1.1em;
+      padding: 6px 13px;
+      font-weight: bold;
+      border: 2px solid #ffd54f;
+      margin: 8px 0;
+      display: inline-block;
+      vertical-align: middle;
+      letter-spacing: 1px;
+    }
+    /* Secret code box */
+    .secret-box {
+      display: flex; flex-direction: column; background: #444; padding: 18px; border-radius: 8px; margin-top: 20px; align-items: center;
+    }
+    .secret-box input[type="text"] { padding: 8px; border-radius: 4px; border: 1px solid #888; font-size: 1.1rem; margin-bottom: 8px; width: 180px; text-align: center; }
+    .cheese-result { background: #ffe082; color: #222; font-weight: bold; border-radius: 6px; padding: 12px; margin-top: 10px; display: none; animation: pop 0.5s; }
   </style>
 </head>
 <body>
   <h1>Beyblade Game Lobby</h1>
-
-  <!-- Main Lobby Screen -->
   <div id="lobbyScreen" class="screen active">
     <button class="lobby-btn" onclick="showScreen('customizeScreen')">Customize Your Beyblades</button>
     <button class="lobby-btn" onclick="startStoryMode()">Fight Story Mode</button>
-    <button class="lobby-btn" onclick="alert('Friend Match coming soon!')">Fight with a Friend (Room Code)</button>
+    <button class="lobby-btn" onclick="startFriendFight()">Fight with a Friend</button>
   </div>
-
-  <!-- Customize Screen -->
   <div id="customizeScreen" class="screen">
     <button class="arrow-btn" onclick="showScreen('lobbyScreen')" title="Back to Lobby">&#8592;</button>
     <h2>Customize Your Beyblade</h2>
-    <p>Choose your parts, colors, and stickers here! (Feature coming soon.)</p>
+    <button id="cheeseBtn" type="button" onclick="setCheeseBeyblade()">🧀 Cheese Beyblade</button>
+    <form class="customize-form" id="customForm">
+      <label for="layer">Layer (Attack Ring):</label>
+      <select id="layer"></select>
+      <label for="disk">Disk (Weight Disk/CWD):</label>
+      <select id="disk"></select>
+      <label for="driver">Driver (Running Core):</label>
+      <select id="driver"></select>
+      <button type="submit">Save Beyblade</button>
+    </form>
+    <div id="customSaveMsg" class="custom-save-msg">Beyblade saved!</div>
+    <div id="stats"></div>
   </div>
-
-  <!-- Story Mode Screen -->
   <div id="storyScreen" class="screen">
     <div id="storyContent"></div>
     <div id="storyOptions" style="margin-top:18px;"></div>
   </div>
-
-  <!-- Secret code box (always visible) -->
+  <div id="fightModal">
+    <div class="fight-modal-content">
+      <button class="fight-close-btn" id="closeFightBtn">Close</button>
+      <div id="modalDialogueBlock"></div>
+      <canvas id="fightCanvas" width="460" height="220" style="display:none;"></canvas>
+      <div class="fight-result" id="fightResult" style="display:none;"></div>
+    </div>
+  </div>
   <div class="secret-box">
     <label for="secretInput">Enter Secret Code:</label>
     <input type="text" id="secretInput" placeholder="Secret Code">
@@ -136,97 +152,273 @@
       <span style="color:#d84315;font-weight:bold;">Any opponent beyblade shatters like glass!</span>
     </div>
   </div>
-
-  <script>
-    // Story mode data
-    const storyFights = [
-      { name: "Gingka Hagane", bey: "Samurai Ifrit" },
-      { name: "Shinobu Hiryuin", bey: "Ninja Salamander" },
-      { name: "Kira Hayama", bey: "Gladiator Bahamoote" },
-      { name: "Sakyo Kurayami", bey: "Ronin Dragoon" },
-      { name: "Takanosuke Shishiya", bey: "Archer Gryph" }
-    ];
-    let currentFight = 0;
-
-    function showScreen(screenId) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId).classList.add('active');
-    }
-
-    // Story Mode logic
-    function startStoryMode() {
-      currentFight = 0;
-      showScreen('storyScreen');
-      renderStoryFight();
-    }
-
-    function renderStoryFight() {
-      const storyContent = document.getElementById('storyContent');
-      const storyOptions = document.getElementById('storyOptions');
-      if (currentFight < storyFights.length) {
-        const fight = storyFights[currentFight];
-        storyContent.innerHTML = `
-          <h2>Fight ${currentFight + 1}: ${fight.name}</h2>
-          <p>Opponent Beyblade: <b>${fight.bey}</b></p>
-          <p>Prepare to battle! (Fight simulation coming soon.)</p>
-        `;
-        // Only show back button between fights, not during a fight (simulate with "Next" option)
-        storyOptions.innerHTML = `
-          <button class="option-btn" onclick="nextStoryFight()">Fight!</button>
-          ${currentFight > 0 ? '<button class="option-btn" onclick="returnToLobby()">Back to Lobby</button>' : ''}
-        `;
-      } else {
-        storyContent.innerHTML = `<h2>Congratulations!</h2>
-          <p>You defeated all opponents in Story Mode!</p>`;
-        storyOptions.innerHTML = `
-          <button class="option-btn" onclick="returnToLobby()">Back to Lobby</button>
-          <button class="option-btn" onclick="restartStory()">Fight Again</button>
-        `;
+<script>
+/* --- HMS PARTS DATA --- */
+const layers = {
+  "Advance Striker":{attack:8,defense:4,stamina:5,weight:32},
+  "Samurai Upper":{attack:7,defense:7,stamina:6,weight:33},
+  "Wolborg MS":{attack:4,defense:5,stamina:9,weight:31},
+  "Jiraiya Blade":{attack:9,defense:3,stamina:7,weight:32},
+  "Slash Upper":{attack:7,defense:6,stamina:7,weight:32},
+  "Magical Ape MS":{attack:6,defense:8,stamina:5,weight:33},
+  "Phantom Fox MS":{attack:5,defense:6,stamina:7,weight:30},
+  "Gaia Dragoon MS":{attack:10,defense:4,stamina:6,weight:31},
+  "Sea Dragon":{attack:4,defense:9,stamina:5,weight:35},
+  "Driger MS":{attack:6,defense:8,stamina:6,weight:31},
+  "Dranzer MS":{attack:7,defense:5,stamina:8,weight:30},
+  "Draciel MS":{attack:4,defense:10,stamina:4,weight:34},
+  "Dragoon MS":{attack:9,defense:5,stamina:6,weight:29},
+  "Dragoon MSUV":{attack:10,defense:6,stamina:5,weight:30},
+  "CHEESE":{attack:99,defense:99,stamina:99,weight:250}
+};
+const disks = {
+  "CWD Defense Ring":{attack:3,defense:9,stamina:8,weight:17},
+  "CWD Free Survivor":{attack:6,defense:4,stamina:8,weight:16},
+  "CWD God Ring":{attack:9,defense:5,stamina:4,weight:18},
+  "CWD Reverse Defenser":{attack:2,defense:10,stamina:6,weight:19},
+  "CWD Free Saucer":{attack:5,defense:5,stamina:9,weight:18},
+  "CWD Attack Ring":{attack:10,defense:3,stamina:5,weight:17},
+  "CWD Eternal Survivor":{attack:4,defense:6,stamina:10,weight:16},
+  "CHEESE":{attack:99,defense:99,stamina:99,weight:0}
+};
+const drivers = {
+  "Grip Flat Core":{attack:10,defense:2,stamina:2,weight:11},
+  "Metal Sharp Core":{attack:2,defense:6,stamina:8,weight:12},
+  "Bearing Core":{attack:1,defense:5,stamina:10,weight:13},
+  "Metal Change Core":{attack:6,defense:7,stamina:5,weight:14},
+  "Rubber Flat Core":{attack:9,defense:3,stamina:3,weight:10},
+  "Metal Weight Core":{attack:3,defense:10,stamina:5,weight:15},
+  "Customize Grip Core":{attack:7,defense:4,stamina:7,weight:13},
+  "Metal Semi-Flat Core":{attack:5,defense:7,stamina:7,weight:12},
+  "Bearing Core 2":{attack:2,defense:6,stamina:10,weight:13},
+  "CHEESE":{attack:99,defense:99,stamina:99,weight:0}
+};
+let cheeseUnlocked = localStorage.getItem('cheeseUnlocked') === '1';
+function showCheeseBtn(){document.getElementById('cheeseBtn').style.display=cheeseUnlocked?'':'';}
+function populateDropdown(id,data,includeCheese=false){
+  const select=document.getElementById(id);select.innerHTML='';
+  for(let key in data){
+    if(!includeCheese&&key==="CHEESE")continue;
+    let option=document.createElement('option');option.value=key;option.text=key;select.appendChild(option);
+  }
+  if(includeCheese&&cheeseUnlocked){
+    let option=document.createElement('option');option.value="CHEESE";option.text="🧀 CHEESE";select.appendChild(option);
+  }
+}
+function updateStats(){
+  const layer=document.getElementById('layer').value;
+  const disk=document.getElementById('disk').value;
+  const driver=document.getElementById('driver').value;
+  let total;
+  if(layer==="CHEESE"&&disk==="CHEESE"&&driver==="CHEESE"){total={attack:99,defense:99,stamina:99,weight:250};}
+  else{total={attack:layers[layer].attack+disks[disk].attack+drivers[driver].attack,defense:layers[layer].defense+disks[disk].defense+drivers[driver].defense,stamina:layers[layer].stamina+disks[disk].stamina+drivers[driver].stamina,weight:layers[layer].weight+disks[disk].weight+drivers[driver].weight};}
+  let extra="";if(layer==="CHEESE"&&disk==="CHEESE"&&driver==="CHEESE"){extra=`<span class="cheese-badge">CHEESE BEYBLADE<br>Weight: 250 lbs<br>Spin: Mach 3.5</span>`;}
+  document.getElementById('stats').innerHTML=`
+    <table class="stats-table">
+      <tr><th>Part</th><th>Attack</th><th>Defense</th><th>Stamina</th><th>Weight</th></tr>
+      <tr><td>${layer}</td><td>${layers[layer].attack}</td><td>${layers[layer].defense}</td><td>${layers[layer].stamina}</td><td>${layers[layer].weight}g</td></tr>
+      <tr><td>${disk}</td><td>${disks[disk].attack}</td><td>${disks[disk].defense}</td><td>${disks[disk].stamina}</td><td>${disks[disk].weight}g</td></tr>
+      <tr><td>${driver}</td><td>${drivers[driver].attack}</td><td>${drivers[driver].defense}</td><td>${drivers[driver].stamina}</td><td>${drivers[driver].weight}g</td></tr>
+      <tr><th>Total</th><th>${total.attack}</th><th>${total.defense}</th><th>${total.stamina}</th><th>${total.weight}g</th></tr>
+    </table>
+    ${extra}`;
+}
+function saveCustomBeyblade(e){
+  e.preventDefault();
+  const layer=document.getElementById('layer').value;
+  const disk=document.getElementById('disk').value;
+  const driver=document.getElementById('driver').value;
+  let stats;
+  if(layer==="CHEESE"&&disk==="CHEESE"&&driver==="CHEESE"){stats={attack:99,defense:99,stamina:99,weight:250,cheese:true};}
+  else{stats={attack:layers[layer].attack+disks[disk].attack+drivers[driver].attack,defense:layers[layer].defense+disks[disk].defense+drivers[driver].defense,stamina:layers[layer].stamina+disks[disk].stamina+drivers[driver].stamina,weight:layers[layer].weight+disks[disk].weight+drivers[driver].weight};}
+  localStorage.setItem('customBeyblade',JSON.stringify({layer,disk,driver,stats}));
+  document.getElementById('customSaveMsg').style.display='block';
+  setTimeout(()=>{document.getElementById('customSaveMsg').style.display='none';},1200);
+}
+function setCheeseBeyblade(){document.getElementById('layer').value="CHEESE";document.getElementById('disk').value="CHEESE";document.getElementById('driver').value="CHEESE";updateStats();}
+function loadCustomBeyblade(){
+  const data=JSON.parse(localStorage.getItem('customBeyblade'));
+  if(data){document.getElementById('layer').value=data.layer;document.getElementById('disk').value=data.disk;document.getElementById('driver').value=data.driver;updateStats();}
+}
+function setupCustomization(){
+  populateDropdown('layer',layers,cheeseUnlocked);
+  populateDropdown('disk',disks,cheeseUnlocked);
+  populateDropdown('driver',drivers,cheeseUnlocked);
+  showCheeseBtn();
+  updateStats();
+  loadCustomBeyblade();
+  document.getElementById('layer').onchange=updateStats;
+  document.getElementById('disk').onchange=updateStats;
+  document.getElementById('driver').onchange=updateStats;
+  document.getElementById('customForm').onsubmit=saveCustomBeyblade;
+}
+document.addEventListener('DOMContentLoaded',function(){setupCustomization();});
+function showScreen(screenId){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  if(screenId==='customizeScreen'){setupCustomization();}
+}
+const storyFights=[
+  {name:"Kai",faceImg:"images/kai.png",bey:"Dranzer MS",stats:{attack:13,defense:10,stamina:13,weight:60},line:"Let's see what you've got!"},
+  {name:"Ray",faceImg:"images/ray.png",bey:"Driger MS",stats:{attack:12,defense:11,stamina:11,weight:62},line:"I'm not going easy on you!"},
+  {name:"Brooklyn",faceImg:"images/brooklyn.png",bey:"Zeus",stats:{attack:16,defense:13,stamina:17,weight:63},line:"Can you keep up with me?"}
+];
+let currentFight=0;
+function startStoryMode(){currentFight=0;showScreen('storyScreen');renderStoryFight();}
+function renderStoryFight(){
+  const storyContent=document.getElementById('storyContent');
+  const storyOptions=document.getElementById('storyOptions');
+  if(currentFight<storyFights.length){
+    const fight=storyFights[currentFight];
+    storyContent.innerHTML=`<h2>Fight ${currentFight+1}: ${fight.name}</h2><p>Opponent Beyblade: <b>${fight.bey}</b></p>`;
+    storyOptions.innerHTML=`<button class="option-btn" onclick="launchStoryFight()">Begin Fight</button>${currentFight>0?'<button class="option-btn" onclick="returnToLobby()">Back to Lobby</button>':''}`;
+  }else{
+    storyContent.innerHTML=`<h2>Congratulations!</h2><p>You defeated all opponents in Story Mode!</p>`;
+    storyOptions.innerHTML=`<button class="option-btn" onclick="returnToLobby()">Back to Lobby</button><button class="option-btn" onclick="restartStory()">Fight Again</button>`;
+  }
+}
+function restartStory(){currentFight=0;renderStoryFight();}
+function returnToLobby(){showScreen('lobbyScreen');}
+function launchStoryFight(){
+  const custom=JSON.parse(localStorage.getItem('customBeyblade'));
+  if(!custom){alert('Please customize your Beyblade first!');returnToLobby();return;}
+  const fight=storyFights[currentFight];
+  openFightModal(fight,custom,true);
+}
+function startFriendFight(){
+  const custom=JSON.parse(localStorage.getItem('customBeyblade'));
+  if(!custom)return alert('Please customize your Beyblade first!');
+  const rivalOptions=[{name:"Random Blader",faceImg:"images/rival1.png",bey:"Wolborg MS",stats:{attack:10,defense:10,stamina:10,weight:60},line:"Let's have a great match!"},{name:"Random Blader 2",faceImg:"images/rival2.png",bey:"Draciel MS",stats:{attack:8,defense:14,stamina:11,weight:62},line:"You won't beat me!"}];
+  const rival=rivalOptions[Math.floor(Math.random()*rivalOptions.length)];
+  openFightModal(rival,custom,false);
+}
+function openFightModal(rival,player,isStory){
+  const modal=document.getElementById('fightModal');
+  const dialogueBlock=document.getElementById('modalDialogueBlock');
+  const canvas=document.getElementById('fightCanvas');
+  const resultDiv=document.getElementById('fightResult');
+  document.getElementById('closeFightBtn').onclick=()=>{
+    modal.style.display='none';dialogueBlock.innerHTML="";canvas.style.display='none';resultDiv.style.display='none';
+    if(isStory&&fightEnded){currentFight++;renderStoryFight();}
+  };
+  fightEnded=false;modal.style.display='flex';dialogueBlock.innerHTML="";canvas.style.display='none';resultDiv.style.display='none';
+  renderTalkingDialogue(rival.faceImg,rival.name,rival.line||"Let's battle!",function(){
+    dialogueBlock.innerHTML+=`<div style="margin-top:12px;"><button id="launchBtn">Launch Beyblades!</button></div>`;
+    document.getElementById('launchBtn').onclick=()=>{
+      dialogueBlock.innerHTML="";canvas.style.display='';resultDiv.style.display='none';
+      animateFight(player,rival,canvas,resultDiv,isStory);
+    };
+  });
+}
+function renderTalkingDialogue(faceImg,charName,text,onDone){
+  const dialogueBlock=document.getElementById('modalDialogueBlock');
+  dialogueBlock.innerHTML=`<div class="fight-dialogue-block"><span class="face-container"><span class="fight-dialogue-face" id="charFace"><img src="${faceImg}" alt="${charName}"><span class="talking-mouth"></span></span></span><span class="fight-dialogue-text" id="talkText"></span></div>`;
+  let i=0;const speed=32;const talkText=document.getElementById('talkText');
+  function typeLoop(){
+    if(i<=text.length){
+      talkText.innerHTML=`<b>${charName}:</b> "`+text.slice(0,i)+(i<text.length?'<span style="opacity:0.3;">'+text.slice(i,i+1)+'</span>':'')+'"';
+      i++;setTimeout(typeLoop,speed+(Math.random()*35));
+    }else{setTimeout(()=>{document.getElementById('charFace').querySelector('.talking-mouth').style.animation='none';if(onDone)onDone();},400);}
+  }typeLoop();
+}
+let fightEnded=false;
+function animateFight(player,rival,canvas,resultDiv,isStory){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;const arenaR=90,cx=W/2,cy=H/2,bbR=28;
+  let p={x:cx-70,y:cy,vx:0,vy:0,angle:0,spin:0.6+Math.random()*0.2,spinDecay:0.996,color:'#4fc3f7',alive:true,name:"Player"};
+  let r={x:cx+70,y:cy,vx:0,vy:0,angle:0,spin:0.6+Math.random()*0.2,spinDecay:0.996,color:'#f06292',alive:true,name:"Rival"};
+  const usingCheese=(player.layer==="CHEESE"&&player.disk==="CHEESE"&&player.driver==="CHEESE");
+  let result=null;let frame=0;let clashCooldown=0;let KOed=null;
+  if(usingCheese){
+    setTimeout(()=>{cheeseShatterAnim(r.x,r.y);},1200);
+    setTimeout(()=>{showFightResult(player,rival,resultDiv,canvas,isStory,true);},1800);
+    drawBeyblades(ctx,p,r,cx,cy,arenaR,bbR,usingCheese,0);fightEnded=true;return;
+  }
+  function drawBeyblades(ctx,p,r,cx,cy,arenaR,bbR,cheese,fadeOutR){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,arenaR,0,2*Math.PI);ctx.strokeStyle='#444';ctx.lineWidth=3;ctx.stroke();ctx.restore();
+    if(p.alive){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);ctx.globalAlpha=1.0;drawBey(ctx,bbR,p.color);ctx.restore();}
+    if(r.alive){ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.angle);ctx.globalAlpha=fadeOutR>0?Math.max(0,1-fadeOutR):1.0;drawBey(ctx,bbR,r.color);ctx.restore();}
+  }
+  function drawBey(ctx,radius,color){
+    ctx.beginPath();ctx.arc(0,0,radius,0,2*Math.PI);ctx.fillStyle=color;ctx.shadowColor="#000";ctx.shadowBlur=6;ctx.fill();
+    ctx.save();ctx.rotate(Math.random()*Math.PI*2);ctx.beginPath();ctx.arc(radius*0.55,0,7,0,2*Math.PI);ctx.fillStyle='#fff';ctx.globalAlpha=0.5;ctx.fill();ctx.restore();ctx.globalAlpha=1.0;ctx.shadowBlur=0;
+  }
+  function fightFrame(){
+    frame++;
+    if(p.alive)p.spin*=p.spinDecay;
+    if(r.alive)r.spin*=r.spinDecay;
+    p.angle+=p.spin*0.4;r.angle+=r.spin*0.4;
+    if(p.alive){p.x=cx-Math.cos(frame*0.015)*50-10;p.y=cy+Math.sin(frame*0.012)*35;}
+    if(r.alive){r.x=cx+Math.cos(frame*0.012)*50+10;r.y=cy-Math.sin(frame*0.014)*35;}
+    if(p.alive&&r.alive&&clashCooldown===0){
+      let dx=r.x-p.x,dy=r.y-p.y,dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<bbR*2.05){
+        clashCooldown=40;
+        let pPower=player.stats.attack+Math.random()*3;
+        let rPower=rival.stats.attack+Math.random()*3;
+        pPower-=rival.stats.defense*0.1;
+        rPower-=player.stats.defense*0.1;
+        let koChance=0.17+Math.abs(pPower-rPower)*0.06;
+        if(Math.random()<koChance){
+          if(pPower>rPower){KOed=r;r.alive=false;animateKO(r,1);}
+          else{KOed=p;p.alive=false;animateKO(p,-1);}
+        }else{
+          let fx=dx/dist*16,fy=dy/dist*16;p.x-=fx;p.y-=fy;r.x+=fx;r.y+=fy;
+        }
       }
+    }else if(clashCooldown>0){clashCooldown--;}
+    for(let b of[p,r]){if(b.alive){if(Math.sqrt((b.x-cx)**2+(b.y-cy)**2)>arenaR+bbR-2){b.alive=false;KOed=b;}}}
+    for(let b of[p,r]){if(b.alive&&b.spin<0.012){b.alive=false;}}
+    let fadeOutR=0;if(KOed===r&&!r.alive)fadeOutR=Math.min(1,(frame%60)/30);
+    drawBeyblades(ctx,p,r,cx,cy,arenaR,bbR,false,fadeOutR);
+    let winner=null;if(!p.alive&&!r.alive)winner=null;else if(!p.alive)winner=r;else if(!r.alive)winner=p;else if(p.spin<0.012&&r.spin<0.012)winner=null;
+    if(winner||(!p.alive&&!r.alive)){
+      setTimeout(()=>{
+        let playerWin=(winner===p);showFightResult(player,rival,resultDiv,canvas,isStory,false,playerWin,KOed);
+      },900);fightEnded=true;return;
     }
-
-    function nextStoryFight() {
-      // After "Fight!", allow user to "Fight Next Opponent" or "Back to Lobby"
-      const storyContent = document.getElementById('storyContent');
-      const storyOptions = document.getElementById('storyOptions');
-      const fight = storyFights[currentFight];
-      storyContent.innerHTML = `
-        <h2>You defeated ${fight.name}!</h2>
-        <p>Opponent Beyblade: <b>${fight.bey}</b></p>
-        <p>Get ready for the next battle!</p>
-      `;
-      let nextBtn = '';
-      if (currentFight < storyFights.length - 1) {
-        nextBtn = `<button class="option-btn" onclick="currentFight++;renderStoryFight()">Fight Next Opponent</button>`;
-      } else {
-        nextBtn = `<button class="option-btn" onclick="currentFight++;renderStoryFight()">Finish</button>`;
-      }
-      storyOptions.innerHTML = `
-        ${nextBtn}
-        <button class="option-btn" onclick="returnToLobby()">Back to Lobby</button>
-      `;
+    requestAnimationFrame(fightFrame);
+  }
+  function animateKO(b,dir){
+    let steps=36;let bx=b.x,by=b.y;let tx=cx+dir*(arenaR+90),ty=cy+(Math.random()-0.5)*60;let i=0;
+    function fly(){if(i>steps)return;let t=i/steps;b.x=bx+(tx-bx)*t;b.y=by+(ty-by)*t;b.angle+=(0.3+Math.random()*0.09);i++;requestAnimationFrame(fly);}
+    fly();
+  }
+  requestAnimationFrame(fightFrame);
+  function cheeseShatterAnim(x,y){
+    for(let i=0;i<18;++i){
+      let angle=Math.random()*2*Math.PI;let dist=70+Math.random()*50;
+      let dx=Math.cos(angle)*dist;let dy=Math.sin(angle)*dist;
+      let piece=document.createElement('div');piece.className='piece';
+      piece.style.left=(canvas.offsetLeft+x-12)+'px';piece.style.top=(canvas.offsetTop+y-12)+'px';
+      piece.animate([{transform:'translate(0,0) scale(1) rotate(0deg)'},{transform:`translate(${dx}px,${dy}px) scale(${0.7+Math.random()*0.7}) rotate(${Math.random()*360}deg)`}],{duration:1300,easing:"cubic-bezier(.17,.67,.83,.67)",fill:"forwards"});
+      setTimeout(()=>{piece.remove();},1400);document.body.appendChild(piece);
     }
-
-    function restartStory() {
-      currentFight = 0;
-      renderStoryFight();
-    }
-
-    function returnToLobby() {
-      showScreen('lobbyScreen');
-    }
-
-    // Secret code logic
-    function checkSecret() {
-      const input = document.getElementById('secretInput').value.trim();
-      const result = document.getElementById('cheeseResult');
-      if (input === "ILOVECH33S3") {
-        result.style.display = 'block';
-      } else {
-        result.style.display = 'none';
-        alert("Incorrect code! Try again.");
-      }
-    }
-  </script>
+  }
+}
+function showFightResult(player,rival,resultDiv,canvas,isStory,usedCheese,playerWin,KOed){
+  let resultMsg="";
+  if(usedCheese){resultMsg=`<b>You win!</b><br>Your Cheese Beyblade shattered the opponent's beyblade into pieces!<br><span class="cheese-badge">UNSTOPPABLE CHEESE</span>`;}
+  else if(playerWin){
+    if(KOed&&KOed!==player){resultMsg=`<b>You win by K.O.!</b><br>You knocked your opponent out of the arena!`;}
+    else{resultMsg=`<b>You win!</b><br>Your Beyblade was last spinning in the arena!`;}
+  }else{
+    if(KOed&&KOed!==rival){resultMsg=`<b>You lose by K.O.!</b><br>Your Beyblade was knocked out of the arena!`;}
+    else{resultMsg=`<b>You lose!</b><br>${rival.name}'s Beyblade was last spinning in the arena.`;}
+  }
+  resultDiv.innerHTML=resultMsg;resultDiv.style.display='';canvas.style.display='';fightEnded=true;
+}
+function checkSecret(){
+  const input=document.getElementById('secretInput').value.trim();
+  const result=document.getElementById('cheeseResult');
+  if(input==="ILOVECH33S3"){
+    result.style.display='block';cheeseUnlocked=true;localStorage.setItem('cheeseUnlocked','1');
+    showCheeseBtn();populateDropdown('layer',layers,true);populateDropdown('disk',disks,true);populateDropdown('driver',drivers,true);updateStats();
+  }else{
+    result.style.display='none';cheeseUnlocked=false;localStorage.setItem('cheeseUnlocked','0');showCheeseBtn();alert("Incorrect code! Try again.");
+  }
+}
+</script>
 </body>
 </html>
