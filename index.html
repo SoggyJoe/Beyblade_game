@@ -31,6 +31,9 @@
     .fight-modal-content {
       background: #222; color: #ffeb3b; border-radius: 14px; box-shadow: 0 0 36px #000b;
       padding: 32px 24px; max-width: 520px; width: 90vw; text-align: center; position: relative;
+      min-height: 280px;
+      min-width: 320px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .fight-close-btn {
       position: absolute; top: 14px; right: 14px; background: #f44336; color: #fff; border: none;
@@ -57,13 +60,10 @@
     }
     .fight-dialogue-text { font-size: 1.1em; color: #fffde7; text-align: left; align-self: center; min-width: 170px; min-height: 54px; }
     .fight-result { font-size: 1.3em; margin: 22px 0 10px 0; }
-    @keyframes pop {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    @keyframes mouthOpen {
-      0%, 100% { clip-path: ellipse(30% 10% at 50% 70%); }
-      50%      { clip-path: ellipse(30% 30% at 50% 80%); }
+    .battle-gif {
+      max-width: 220px; max-height: 180px; margin: 18px auto 6px auto; display: block;
+      border-radius: 12px; box-shadow: 0 0 16px #000a;
+      background: #333;
     }
     .cheese-badge {
       background: #ffe082;
@@ -77,6 +77,14 @@
       display: inline-block;
       vertical-align: middle;
       letter-spacing: 1px;
+    }
+    @keyframes pop {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes mouthOpen {
+      0%, 100% { clip-path: ellipse(30% 10% at 50% 70%); }
+      50%      { clip-path: ellipse(30% 30% at 50% 80%); }
     }
     .secret-box {
       display: flex; flex-direction: column; background: #444; padding: 18px; border-radius: 8px; margin-top: 20px; align-items: center;
@@ -116,6 +124,9 @@
     <div class="fight-modal-content">
       <button class="fight-close-btn" id="closeFightBtn">Close</button>
       <div id="modalDialogueBlock"></div>
+      <div id="battleGifContainer" style="display:none;">
+        <img src="images/battle.gif" alt="Beyblade Battle" class="battle-gif">
+      </div>
       <div class="fight-result" id="fightResult" style="display:none;"></div>
     </div>
   </div>
@@ -278,28 +289,35 @@
       const modal=document.getElementById('fightModal');
       const dialogueBlock=document.getElementById('modalDialogueBlock');
       const resultDiv=document.getElementById('fightResult');
+      const gifDiv=document.getElementById('battleGifContainer');
       document.getElementById('closeFightBtn').onclick=()=>{
-        modal.style.display='none';dialogueBlock.innerHTML="";resultDiv.style.display='none';
+        modal.style.display='none';dialogueBlock.innerHTML="";resultDiv.style.display='none';gifDiv.style.display='none';
         if(isStory&&fightEnded){currentFight++;renderStoryFight();}
       };
-      fightEnded=false;modal.style.display='flex';dialogueBlock.innerHTML="";resultDiv.style.display='none';
+      fightEnded=false;modal.style.display='flex';dialogueBlock.innerHTML="";resultDiv.style.display='none';gifDiv.style.display='none';
       renderTalkingDialogue(rival.faceImg,rival.name,rival.line||"Let's battle!",function(){
         dialogueBlock.innerHTML+=`<div style="margin-top:12px;"><button class="option-btn" id="launchBtn">Launch Beyblades!</button></div>`;
         document.getElementById('launchBtn').onclick=()=>{
+          // 1. Show GIF, hide dialogue and result
           dialogueBlock.innerHTML="";
           resultDiv.style.display='none';
-          // Simulate outcome and show result instantly
-          const usedCheese=player.layer==="CHEESE"&&player.disk==="CHEESE"&&player.driver==="CHEESE";
-          let playerWin=false,KOed=null;
-          if(usedCheese){playerWin=true;}
-          else{
-            // Simple fight logic: sum stats, add randomness
-            const playerPower=player.stats.attack+player.stats.defense+player.stats.stamina+player.stats.weight+Math.random()*4;
-            const rivalPower=rival.stats.attack+rival.stats.defense+rival.stats.stamina+rival.stats.weight+Math.random()*4;
-            if(playerPower>rivalPower){playerWin=true;}
-            KOed=null; // Could add KO logic if desired
-          }
-          showFightResult(player,rival,resultDiv,isStory,usedCheese,playerWin,KOed);
+          gifDiv.style.display='block';
+          // 2. After a delay, hide GIF and show result
+          setTimeout(()=>{
+            gifDiv.style.display='none';
+            // Your fight result logic:
+            const usedCheese=player.layer==="CHEESE"&&player.disk==="CHEESE"&&player.driver==="CHEESE";
+            let playerWin=false,KOed=null;
+            if(usedCheese){playerWin=true;}
+            else{
+              // Simple fight logic: sum stats, add randomness
+              const playerPower=player.stats.attack+player.stats.defense+player.stats.stamina+player.stats.weight+Math.random()*4;
+              const rivalPower=rival.stats.attack+rival.stats.defense+rival.stats.stamina+rival.stats.weight+Math.random()*4;
+              if(playerPower>rivalPower){playerWin=true;}
+              KOed=null; // Could add KO logic if desired
+            }
+            showFightResult(player,rival,resultDiv,isStory,usedCheese,playerWin,KOed);
+          }, 2500); // 2.5 seconds of GIF
         };
       });
     }
