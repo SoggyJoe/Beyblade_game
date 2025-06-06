@@ -108,8 +108,6 @@
   <h1>Beyblade Game Lobby</h1>
   <div id="lobbyScreen" class="screen active">
     <button class="lobby-btn">Customize Your Beyblades</button>
-    document.getElementById('customizeBtn').addEventListener('click', function() {
-    window.open('customize.html', 'Beyblade Customization');
     <button class="lobby-btn" onclick="startStoryMode()">Fight Story Mode</button>
     <button class="lobby-btn" onclick="startFriendFight()">Fight with a Friend</button>
   </div>
@@ -154,6 +152,9 @@
     </div>
   </div>
 <script>
+  document.getElementById('customizeBtn').addEventListener('click', function() {
+  showScreen('customizeScreen');
+});
 /* --- HMS PARTS DATA --- */
 const layers = {
   "Advance Striker":{attack:8,defense:4,stamina:5,weight:32},
