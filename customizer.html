@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Beyblade Customization</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        .section { margin-bottom: 25px; }
+        .hidden { display: none; }
+        label { display: block; margin-top: 10px; }
+        select, input[type="text"] { width: 200px; padding: 4px; }
+        button { margin-top: 15px; padding: 8px 18px; }
+        #cheeseBtn { background: #ffd700; color: #222; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Beyblade Customizer</h1>
+    <div class="section">
+        <button id="customizeBtn">Customize Your Beyblade</button>
+    </div>
+
+    <div id="customizerSection" class="section">
+        <form id="customizerForm" autocomplete="off">
+            <label>
+                Metal Ring:
+                <select id="metalRing"></select>
+            </label>
+            <label>
+                Plastic Ring:
+                <select id="plasticRing"></select>
+            </label>
+            <label>
+                Energy Ring:
+                <select id="energyRing"></select>
+            </label>
+            <label>
+                Tip:
+                <select id="tip"></select>
+            </label>
+            <label style="margin-top:18px;">
+                Secret Code:
+                <input type="text" id="secretCodeBox" placeholder="Enter secret code">
+            </label>
+            <div id="cheeseSection" class="hidden">
+                <button type="button" id="cheeseBtn">CHEESE</button>
+            </div>
+            <div style="margin-top:20px;">
+                <button type="submit">Save Beyblade</button>
+            </div>
+        </form>
+        <div id="saveMsg" style="color:green; margin-top:10px;"></div>
+    </div>
+
+    <script>
+        // Example HMS parts. Replace or expand as needed.
+        const metalRings = [
+            "Advance Attacker", "Samurai Upper", "Magical Ape", "Jiraiya Blade", "Cheese Metal"
+        ];
+        const plasticRings = [
+            "Advance Striker", "Dranzer Grip", "Jiraiya Defender", "Dragoon Grip", "Cheese Plastic"
+        ];
+        const energyRings = [
+            "Samurai Changer", "Driger MS", "Dragoon MS", "Death Gargoyle", "Cheese Energy"
+        ];
+        const tips = [
+            "Sharp Core", "Bearing Core", "Metal Flat", "Rubber Tip", "Cheese Tip"
+        ];
+
+        function fillDropdown(id, items) {
+            const sel = document.getElementById(id);
+            sel.innerHTML = "";
+            items.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                sel.appendChild(opt);
+            });
+        }
+
+        fillDropdown('metalRing', metalRings);
+        fillDropdown('plasticRing', plasticRings);
+        fillDropdown('energyRing', energyRings);
+        fillDropdown('tip', tips);
+
+        // Save/load functions
+        function saveChoices() {
+            const selection = {
+                metalRing: document.getElementById('metalRing').value,
+                plasticRing: document.getElementById('plasticRing').value,
+                energyRing: document.getElementById('energyRing').value,
+                tip: document.getElementById('tip').value
+            };
+            localStorage.setItem('beybladeChoices', JSON.stringify(selection));
+        }
+        function loadChoices() {
+            const saved = JSON.parse(localStorage.getItem('beybladeChoices'));
+            if (saved) {
+                if (metalRings.includes(saved.metalRing)) document.getElementById('metalRing').value = saved.metalRing;
+                if (plasticRings.includes(saved.plasticRing)) document.getElementById('plasticRing').value = saved.plasticRing;
+                if (energyRings.includes(saved.energyRing)) document.getElementById('energyRing').value = saved.energyRing;
+                if (tips.includes(saved.tip)) document.getElementById('tip').value = saved.tip;
+            }
+        }
+
+        // Scroll to customizer section on button click
+        document.getElementById('customizeBtn').onclick = function() {
+            document.getElementById('customizerSection').scrollIntoView({ behavior: "smooth" });
+        };
+
+        // Show cheese button when code entered
+        document.getElementById('secretCodeBox').addEventListener('input', function() {
+            if (this.value === "ILOVECH33S3") {
+                document.getElementById('cheeseSection').classList.remove('hidden');
+            } else {
+                document.getElementById('cheeseSection').classList.add('hidden');
+            }
+        });
+
+        // Cheese button behavior
+        document.getElementById('cheeseBtn').onclick = function() {
+            document.getElementById('metalRing').value = "Cheese Metal";
+            document.getElementById('plasticRing').value = "Cheese Plastic";
+            document.getElementById('energyRing').value = "Cheese Energy";
+            document.getElementById('tip').value = "Cheese Tip";
+            saveChoices();
+            document.getElementById('saveMsg').textContent = "Cheese Beyblade loaded! 250 lbs, Mach 3.5 spin. All opponents shatter!";
+            setTimeout(() => document.getElementById('saveMsg').textContent = "", 4000);
+        };
+
+        // Save on submit
+        document.getElementById('customizerForm').onsubmit = function(e) {
+            e.preventDefault();
+            saveChoices();
+            document.getElementById('saveMsg').textContent = "Beyblade saved!";
+            setTimeout(() => document.getElementById('saveMsg').textContent = "", 2000);
+        };
+
+        // Save on dropdown change
+        ['metalRing', 'plasticRing', 'energyRing', 'tip'].forEach(id => {
+            document.getElementById(id).addEventListener('change', saveChoices);
+        });
+
+        // On page load, load choices and check for cheese unlock
+        window.onload = function() {
+            loadChoices();
+            if (document.getElementById('secretCodeBox').value === 'ILOVECH33S3')
+                document.getElementById('cheeseSection').classList.remove('hidden');
+        };
+    </script>
+</body>
+</html>
