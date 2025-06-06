@@ -33,6 +33,179 @@
       margin-top: 20px; border-radius: 18px; background: radial-gradient(circle,#eee 60%,#bbb 100%);
       box-shadow: 0 0 14px #0008;
       display: block;
+      <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Beyblade 3D Barrage Attack Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+    <style>
+        body { background: #23272e; color: #eee; font-family: sans-serif; text-align: center; }
+        #stadium3d { margin: 30px auto; display: block; width: 600px; height: 400px; }
+        .button { margin: 15px; padding: 10px 22px; font-size: 1.2em; border: none; border-radius: 7px; background: #2d8cf0; color: #fff; cursor: pointer; }
+        .stats { margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <h2>Beyblade 3D Barrage Attack Demo</h2>
+    <div class="stats" id="stats">
+        Red Health: <span id="health1">100</span> &nbsp;|&nbsp;
+        Blue Health: <span id="health2">100</span>
+    </div>
+    <button class="button" id="attackBtn">Attack!</button>
+    <div id="stadium3d"></div>
+    <div id="log"></div>
+    <script>
+        // === SETUP 3D STADIUM & BEYBLADES ===
+        const WIDTH = 600, HEIGHT = 400;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, WIDTH/HEIGHT, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+        renderer.setSize(WIDTH, HEIGHT);
+        document.getElementById('stadium3d').appendChild(renderer.domElement);
+
+        // Stadium
+        const stadiumGeo = new THREE.CylinderGeometry(5, 5, 1, 64);
+        const stadiumMat = new THREE.MeshPhongMaterial({color: 0x888888, shininess:40});
+        const stadium = new THREE.Mesh(stadiumGeo, stadiumMat);
+        scene.add(stadium);
+
+        // Lighting
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const point = new THREE.PointLight(0xffffff, 1);
+        point.position.set(0, 10, 10);
+        scene.add(point);
+
+        // Beyblade Factory
+        function createBeyblade(color, x, z) {
+            const geo = new THREE.TorusGeometry(0.6, 0.18, 16, 100);
+            const mat = new THREE.MeshPhongMaterial({ color: color, shininess:80 });
+            const bey = new THREE.Mesh(geo, mat);
+            bey.position.set(x, 0.6, z);
+            scene.add(bey);
+            return bey;
+        }
+        const bey1 = createBeyblade(0xff3333, -2, 0);
+        const bey2 = createBeyblade(0x3333ff, 2, 0);
+
+        camera.position.set(0, 8, 8);
+        camera.lookAt(0,0,0);
+
+        // === GAME LOGIC ===
+        let player1 = { name: "Red", health: 100, attack: 10 };
+        let player2 = { name: "Blue", health: 100, attack: 10 };
+
+        function updateStats() {
+            document.getElementById('health1').textContent = Math.max(0, Math.round(player1.health));
+            document.getElementById('health2').textContent = Math.max(0, Math.round(player2.health));
+        }
+        function logMsg(msg) {
+            document.getElementById('log').textContent = msg;
+        }
+
+        // === BARRAGE ANIMATION ===
+        let barrageActive = false, barrageData = null;
+        function performBarrageAttack(attacker, defender, attackerMesh, defenderMesh, onDone) {
+            barrageActive = true;
+            barrageData = {
+                attacker, defender, attackerMesh, defenderMesh, onDone,
+                hits: Math.floor(Math.random()*4)+2, // 2-5 hits
+                step: 0, dir: 1, animPhase: 0, damage: 0,
+            };
+            logMsg(attacker.name + ' launches a BARRAGE ATTACK!');
+        }
+        function animateBarrage() {
+            if (!barrageActive || !barrageData) return;
+            const bd = barrageData;
+            // Move attacker towards & away from defender rapidly
+            let t = Math.sin((bd.animPhase%20)/20*Math.PI);
+            bd.attackerMesh.position.x = THREE.MathUtils.lerp(bd.attacker === player1 ? -2 : 2, 0, t*bd.dir);
+            // Flash effect
+            bd.attackerMesh.material.emissive = new THREE.Color(0xffff00);
+
+            bd.animPhase++;
+            if (bd.animPhase >= 20) {
+                // Hit!
+                let hitDmg = bd.attacker.attack * (0.5 + Math.random());
+                bd.defender.health -= hitDmg;
+                bd.damage += hitDmg;
+                updateStats();
+                // Reset color after hit
+                setTimeout(()=>{bd.attackerMesh.material.emissive = new THREE.Color(0x000000)}, 100);
+                bd.dir *= -1;
+                bd.animPhase = 0;
+                bd.hits--;
+                if (bd.hits <= 0) {
+                    barrageActive = false;
+                    bd.attackerMesh.position.x = bd.attacker === player1 ? -2 : 2;
+                    logMsg(bd.attacker.name + ' finished barrage! Total damage: ' + Math.round(bd.damage));
+                    if (bd.onDone) bd.onDone();
+                }
+            }
+        }
+
+        // === FIGHT SEQUENCE ===
+        function startFight() {
+            document.getElementById('attackBtn').disabled = true;
+            if (Math.random() < 0.4) { // 40% chance for barrage
+                performBarrageAttack(player1, player2, bey1, bey2, fightResult);
+            } else {
+                // Regular attack
+                player2.health -= player1.attack;
+                updateStats();
+                logMsg(player1.name + ' does a normal attack!');
+                setTimeout(fightResult, 700);
+            }
+        }
+        function fightResult() {
+            if (player2.health <= 0) {
+                logMsg('Blue is knocked out! Red wins!');
+                document.getElementById('attackBtn').disabled = true;
+                return;
+            }
+            // Next, blue attacks for demo
+            setTimeout(()=>{
+                if (Math.random() < 0.4) {
+                    performBarrageAttack(player2, player1, bey2, bey1, ()=>{
+                        if (player1.health <= 0) {
+                            logMsg('Red is knocked out! Blue wins!');
+                            document.getElementById('attackBtn').disabled = true;
+                        } else {
+                            document.getElementById('attackBtn').disabled = false;
+                        }
+                        updateStats();
+                    });
+                } else {
+                    player1.health -= player2.attack;
+                    updateStats();
+                    logMsg('Blue does a normal attack!');
+                    setTimeout(()=>{
+                        if (player1.health <= 0) {
+                            logMsg('Red is knocked out! Blue wins!');
+                            document.getElementById('attackBtn').disabled = true;
+                        } else {
+                            document.getElementById('attackBtn').disabled = false;
+                        }
+                    }, 700);
+                }
+            }, 700);
+        }
+
+        document.getElementById('attackBtn').onclick = startFight;
+
+        // === MAIN ANIMATION LOOP ===
+        function animate() {
+            requestAnimationFrame(animate);
+            bey1.rotation.y += 0.15;
+            bey2.rotation.y += 0.15;
+            animateBarrage();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Init
+        updateStats();
+        logMsg('Press "Attack!" to start!');
     }
     .fight-close-btn {
       position: absolute; top: 14px; right: 14px; background: #f44336; color: #fff; border: none;
